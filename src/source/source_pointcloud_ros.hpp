@@ -37,6 +37,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef ROS_FOUND
 #include <ros/ros.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
+#include <rclcpp/qos.hpp>
 #ifdef ENABLE_IMU_DATA_PARSE
   #include "sensor_msgs/Imu.h"
 #endif
@@ -472,8 +473,10 @@ inline void DestinationPointCloudRos::init(const YAML::Node& config)
   node_name << "rslidar_points_destination_" << node_index++;
 
   node_ptr_.reset(new rclcpp::Node(node_name.str()));
-
-  pub_ = node_ptr_->create_publisher<sensor_msgs::msg::PointCloud2>(ros_send_topic, ros_queue_length);
+  
+  rclcpp::QoS qos = rclcpp::SensorDataQoS();
+  qos.keep_last(ros_queue_length);
+  pub_ = node_ptr_->create_publisher<sensor_msgs::msg::PointCloud2>(ros_send_topic, qos);
 
 #ifdef ENABLE_IMU_DATA_PARSE
   std::string ros_send_imu_data_topic;
